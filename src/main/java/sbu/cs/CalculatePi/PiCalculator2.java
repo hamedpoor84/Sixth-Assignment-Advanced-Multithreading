@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class PiCalculator1 {
+public class PiCalculator2 {
 
 
     public static class CalculatePi implements Runnable {
@@ -19,25 +19,14 @@ public class PiCalculator1 {
 
         @Override
         public void run() {
-            BigDecimal numerator = new BigDecimal(1);
             BigDecimal sign = new BigDecimal(1);
-            if (n%4 == 3) {
+            if (n % 2 == 0)
+            {
                 sign = new BigDecimal(-1);
             }
-            if (n%2 == 1) {
-                numerator = numerator.multiply(sign, mc);
-                numerator = numerator.divide(BigDecimal.valueOf(n), mc);
-                numerator = numerator.multiply(BigDecimal.valueOf(4), mc);
-            } else {
-                numerator = BigDecimal.valueOf(0);
-            }
+            BigDecimal numerator = new BigDecimal(4).divide(new BigDecimal((2*n)*(2*n + 1)*(2*n + 2)) , mc).multiply(sign , mc) ;
 
-//            BigDecimal denominator = factorial(2*n + 1);
-
-//            BigDecimal result = numerator.divide(denominator, mc);
-            BigDecimal result = numerator;
-
-            addTouSum(result);
+            addTouSum(numerator);
         }
 
         public BigDecimal factorial(int n){
@@ -56,16 +45,16 @@ public class PiCalculator1 {
         ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
         sum = new BigDecimal(0);
-
-        for (int i = 0; i < 1000; i++) {                          // increasing the number of iterations improves
-            PiCalculator1.CalculatePi task = new PiCalculator1.CalculatePi(i);          // accuracy, try 200 and see the difference!
+        addTouSum(BigDecimal.valueOf(3));
+        for (int i = 1; i < 10000; i++) {                          // increasing the number of iterations improves
+            PiCalculator2.CalculatePi task = new PiCalculator2.CalculatePi(i);          // accuracy, try 200 and see the difference!
             threadPool.execute(task);
         }
 
         threadPool.shutdown();      // always call before awaitTermination
 
         try {
-            threadPool.awaitTermination(100000, TimeUnit.MILLISECONDS);
+            threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -77,12 +66,10 @@ public class PiCalculator1 {
         sum = sum.add(value);
     }
     public static void main(String[] Args) {
-        ExecutorService threadPool = Executors.newFixedThreadPool(4);
+        ExecutorService threadPool = Executors.newFixedThreadPool(8);
 
-        sum = new BigDecimal(0);
-
-        for (int i = 0; i < 1000; i++)  {                          // increasing the number of iterations improves
-            PiCalculator1.CalculatePi task = new PiCalculator1.CalculatePi(i);          // accuracy, try 200 and see the difference!
+        for (int i = 1; i < 1000; i++)  {                          // increasing the number of iterations improves
+            PiCalculator2.CalculatePi task = new PiCalculator2.CalculatePi(i);          // accuracy, try 200 and see the difference!
             threadPool.execute(task);
         }
 
@@ -119,7 +106,7 @@ public class PiCalculator1 {
         sum = sum.setScale(1000, RoundingMode.HALF_DOWN);
         accurateValue = accurateValue.setScale(1000, RoundingMode.HALF_DOWN);
 
-        System.out.println("sin(0.01) up to 1000 decimal places:");
+        System.out.println("Pi up to 1000 decimal places:");
         System.out.println("Calculated Value:  " + sum);
         System.out.println("Accurate Value:    " + accurateValue);
 
