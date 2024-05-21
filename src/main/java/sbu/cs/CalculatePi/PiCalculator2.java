@@ -12,7 +12,7 @@ public class PiCalculator2 {
 
     public static class CalculatePi implements Runnable {
         MathContext mc = new MathContext(1000);     // use when calling BigDecimal operations like divide or multiply
-        int n = 1000;
+        int n ;
         public CalculatePi(int n) {
             this.n = n;
         }

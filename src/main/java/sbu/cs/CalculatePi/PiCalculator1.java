@@ -31,12 +31,7 @@ public class PiCalculator1 {
             } else {
                 numerator = BigDecimal.valueOf(0);
             }
-
-//            BigDecimal denominator = factorial(2*n + 1);
-
-//            BigDecimal result = numerator.divide(denominator, mc);
             BigDecimal result = numerator;
-
             addTouSum(result);
         }
 
