@@ -7,68 +7,87 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class PiCalculator {
+public class PiCalculator1 {
+
+
     public static class CalculatePi implements Runnable {
-        MathContext mc = new MathContext(1000);
-        public int n ;
-        public CalculatePi(int n ) {
-        this.n = n ;
+        MathContext mc = new MathContext(1000);     // use when calling BigDecimal operations like divide or multiply
+        int n = 1000;
+        public CalculatePi(int n) {
+            this.n = n;
         }
 
         @Override
         public void run() {
-            BigDecimal num1 = new BigDecimal(1).divide(new BigDecimal(16).pow(n , mc) , mc);
-            BigDecimal num2 = new BigDecimal(String.valueOf(new BigDecimal(4).divide(new BigDecimal(8*n + 1), mc)));
-            BigDecimal num3 = new BigDecimal(String.valueOf(new BigDecimal(2).divide(new BigDecimal(8*n + 4), mc)));
-            BigDecimal num4 = new BigDecimal(String.valueOf(new BigDecimal(1).divide(new BigDecimal(8*n + 5), mc)));
-            BigDecimal num5 = new BigDecimal(String.valueOf(new BigDecimal(1).divide(new BigDecimal(8*n + 6), mc)));
-            BigDecimal resulet = ((num2.subtract(num3)).subtract(num4)).subtract(num5);
-
-            resulet = resulet.multiply(num1);
-            addTouSum(resulet);
+            BigDecimal numerator = new BigDecimal(1);
+            BigDecimal sign = new BigDecimal(1);
+            if (n%4 == 3) {
+                sign = new BigDecimal(-1);
+            }
+            if (n%2 == 1) {
+                numerator = numerator.multiply(sign, mc);
+                numerator = numerator.divide(BigDecimal.valueOf(n), mc);
+                numerator = numerator.multiply(BigDecimal.valueOf(4), mc);
+            } else {
+                numerator = BigDecimal.valueOf(0);
+            }
+            BigDecimal result = numerator;
+            addTouSum(result);
         }
+
+        public BigDecimal factorial(int n){
+            BigDecimal temp = new BigDecimal(1);
+            for (int i = 1; i <= n; i++) {
+                temp = temp.multiply(new BigDecimal(i), mc);
+            }
+
+            return temp;
+        }
+    }
+
+    public static BigDecimal sum;
+    public String calculate(int floatingPoint)
+    {
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
+
+        sum = new BigDecimal(0);
+
+        for (int i = 0; i < 1000; i++) {                          // increasing the number of iterations improves
+            PiCalculator1.CalculatePi task = new PiCalculator1.CalculatePi(i);          // accuracy, try 200 and see the difference!
+            threadPool.execute(task);
+        }
+
+        threadPool.shutdown();      // always call before awaitTermination
+
+        try {
+            threadPool.awaitTermination(100000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        sum = sum.setScale(floatingPoint, RoundingMode.HALF_DOWN);
+
+        return sum.toString();
     }
     public static synchronized void addTouSum(BigDecimal value){
         sum = sum.add(value);
     }
-    public static BigDecimal sum ;
-    public String calculate(int floatingPoint) {
-        ExecutorService threadpool = Executors.newFixedThreadPool(4);
+    public static void main(String[] Args) {
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
         sum = new BigDecimal(0);
-        for (int i = 0 ; i < floatingPoint ; i++){
-            PiCalculator.CalculatePi task = new PiCalculator.CalculatePi(i);
-            threadpool.execute(task);
+
+        for (int i = 0; i < 1000; i++)  {                          // increasing the number of iterations improves
+            PiCalculator1.CalculatePi task = new PiCalculator1.CalculatePi(i);          // accuracy, try 200 and see the difference!
+            threadPool.execute(task);
         }
 
-        threadpool.shutdown() ;
+        threadPool.shutdown();      // always call before awaitTermination
 
         try {
-            threadpool.awaitTermination(10000 , TimeUnit.MILLISECONDS);
+            threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        sum = sum.setScale(floatingPoint , RoundingMode.DOWN);
-
-        return sum.toString();
-    }
-    public static void main(String[] args) {
-        ExecutorService threadpool = Executors.newFixedThreadPool(16);
-
-        sum = new BigDecimal(0);
-        for (int i = 0 ; i < 1000 ; i++){
-            PiCalculator.CalculatePi task = new PiCalculator.CalculatePi(i);
-            threadpool.execute(task);
-        }
-
-        threadpool.shutdown() ;
-
-        try {
-            threadpool.awaitTermination(10000 , TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        sum = sum.setScale(1000, RoundingMode.HALF_DOWN);
 
         // the accurate value of sin(0.01) up to 1000 decimal places
         BigDecimal accurateValue = new BigDecimal("3.14159265358979323846264338327950288419716939937510" +
@@ -92,10 +111,10 @@ public class PiCalculator {
                 "59825349042875546873115956286388235378759375195778" +
                 "18577805321712268066130019278766111959092164201989");
 
-
+        sum = sum.setScale(1000, RoundingMode.HALF_DOWN);
         accurateValue = accurateValue.setScale(1000, RoundingMode.HALF_DOWN);
 
-        System.out.println("Pi up to 1000 decimal places:");
+        System.out.println("sin(0.01) up to 1000 decimal places:");
         System.out.println("Calculated Value:  " + sum);
         System.out.println("Accurate Value:    " + accurateValue);
 
